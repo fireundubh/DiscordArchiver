@@ -66,6 +66,9 @@
     <Compile Include="data\DEmbedObject.cs" />
     <Compile Include="data\DMessageObject.cs" />
     <Compile Include="data\DRoleObject.cs" />
+    <Compile Include="DecimalJsonConverter.cs" />
+    <Compile Include="JsonHelper.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

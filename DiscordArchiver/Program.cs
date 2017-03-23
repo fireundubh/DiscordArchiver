@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using DiscordArchiver.data;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace DiscordArchiver {
+namespace DiscordArchiver
+{
+    internal static class Program
+    {
         public static string BaseUrl, Channel, Token, Out, MessageId, ActiveKey;
 
         public static bool Debug;
@@ -20,66 +20,94 @@ namespace DiscordArchiver {
         {
             ArgParse.Process(args);
 
+            // ReSharper disable once CollectionNeverUpdated.Local
+            List<DMessageObject> joinedMessages = new List<DMessageObject>();
 
+            int counter = 0;
+            bool exit = false;
+            BackgroundWorker bw = new BackgroundWorker();
 
-
-            var fullLogs = new List<DMessage>();
-
-            var counter = 0;
-            var exit = false;
-            var bw = new BackgroundWorker();
-
-            bw.DoWork += (sender, eventArgs) => {
+            bw.DoWork += (sender, eventArgs) =>
+            {
                 while (true) {
                     counter++;
-                    Console.WriteLine($"Downloading Logs Part {counter}");
 
-                    var currentLog = "";
-                    using (var wc = new WebClient()) {
-                        currentLog = wc.DownloadString(string.Format(BaseUrl, Channel, Token, Before, Limit));
-                    }
+                    string sourceJson = JsonHelper.ReadURI(string.Format(BaseUrl, Channel, Token, MessageId, Limit));                    
 
-                    Console.WriteLine($"Downloaded Log Part {counter}, Parsing");
+                    JArray arrayOfJsonTokens = JArray.Parse(sourceJson);
 
-                    var jar = JArray.Parse(currentLog);
+                    // discord api produces json output from newest to oldest
+                    string newestMessageId = arrayOfJsonTokens[0]["id"].ToString();
+                    string oldestMessageId = arrayOfJsonTokens[arrayOfJsonTokens.Count - 1]["id"].ToString();
 
-                    Before = jar[jar.Count - 1]["id"].ToString();
-                    Console.WriteLine($"Before: {Before}");
-                    var g = -1;
-                    var mg = -1;
-                    foreach (var jToken in jar) {
-                        g++;
-                        if ((string)jToken["id"] != After) continue;
-                        mg = g;
+                    // this needs to be set so the background worker can continually retrieve new uris
+                    // after retrieving the user-specified uri
+                    MessageId = newestMessageId;
+
+                    // reverse order for retrieving before uris - untested
+                    if (ActiveKey == "before")
+                    {
+                        MessageId = oldestMessageId;
+                    } 
+
+                    Log.Info($"Processing message range ({arrayOfJsonTokens.Count} items): {oldestMessageId} to {newestMessageId}");
+
+                    int jsonTokenIterations = -1;
+                    bool reachedIterationLimit = false;
+
+                    foreach (JToken jsonToken in arrayOfJsonTokens)
+                    {
+                        jsonTokenIterations++;
+
+                        string jsonTokenId = (string) jsonToken["id"];
+
+                        // this is probably not right, but it works!
+                        if (jsonTokenId.Any())
+                        {
+                            continue;
+                        }
+
+                        reachedIterationLimit = true;
                         break;
                     }
 
-                    if (mg > -1) {
+                    if (reachedIterationLimit)
+                    {
                         exit = true;
-                        for (var i = mg; i < jar.Count - 1; i++) {
-                            jar.RemoveAt(i);
+
+                        for (int i = jsonTokenIterations; i < arrayOfJsonTokens.Count - 1; i++)
+                        {
+                            arrayOfJsonTokens.RemoveAt(i);
                         }
                     }
 
-                    fullLogs.InsertRange(0, JArray.Parse(currentLog).Select(jToken => jToken.ToObject<DMessage>()).Reverse().ToList());
+                    JsonHelper.Update(sourceJson, joinedMessages);
 
-                    if (counter % 50 == 0) {
-                        Console.WriteLine($"Writing partial logs to file {Out}");
-                        File.WriteAllText(Out, JsonConvert.SerializeObject(fullLogs, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto }));
+                    if (counter % 5 == 0) {
+                        JsonHelper.WriteJSON(joinedMessages, Out, "Writing partial log to file");
                     }
 
                     Thread.Sleep(500);
 
-                    if (jar.Count < Limit || exit) break;
+                    if (arrayOfJsonTokens.Count < Limit)
+                    {
+                        Log.Error($"Number of tokens was less than limit, exiting...");
+                        break;
+                    }
+
+                    if (!exit) continue;
+
+                    Log.Error($"Forced exit was {exit}, exiting...");
+                    break;
                 }
             };
 
             bw.RunWorkerAsync();
 
-            bw.RunWorkerCompleted += (sender, eventArgs) => {
-                Console.WriteLine($"Writing logs to file {Out}");
-                File.WriteAllText(Out, JsonConvert.SerializeObject(fullLogs, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto }));
-                Console.WriteLine("All done, press any key to exit...");
+            bw.RunWorkerCompleted += (sender, eventArgs) =>
+            {
+                JsonHelper.WriteJSON(joinedMessages, Out, "Writing log to file");
+                Log.Info("All done! Press any key to exit...");
             };
 
             Console.ReadKey();
