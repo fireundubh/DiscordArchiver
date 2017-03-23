@@ -10,31 +10,18 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace DiscordArchiver {
+        public static string BaseUrl, Channel, Token, Out, MessageId, ActiveKey;
 
-    class Program {
+        public static bool Debug;
 
-        public static string BaseUrl = "https://discordapp.com/api/channels/{0}/messages?token={1}&before={2}&limit={3}";
+        public static int Limit;
 
-        public static string Channel, Token, Out = "out.json", Before = "", After = "";
-        public static int Limit = 100;
+        private static void Main(string[] args)
+        {
+            ArgParse.Process(args);
 
-        static void Main(string[] args) {
 
-            Channel = args[0];
-            Token = args[1];
 
-            if (args.Length >= 3) {
-                Out = args[2];
-            }
-            if (args.Length >= 4) {
-                Before = args[3];
-            }
-            if (args.Length >= 5) {
-                After = args[4];
-            }
-            if (args.Length >= 6) {
-                int.TryParse(args[5], out Limit);
-            }
 
             var fullLogs = new List<DMessage>();
 
