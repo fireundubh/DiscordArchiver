@@ -51,10 +51,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Archive.cs" />
-    <Compile Include="data\DAttachment.cs" />
-    <Compile Include="data\DAuthor.cs" />
-    <Compile Include="data\DEmbed.cs" />
-    <Compile Include="data\DMessage.cs" />
+    <Compile Include="data\DAttachmentObject.cs" />
+    <Compile Include="data\DEmbedAuthorObject.cs" />
+    <Compile Include="data\DEmbedFieldObject.cs" />
+    <Compile Include="data\DEmbedFooterObject.cs" />
+    <Compile Include="data\DEmbedImageObject.cs" />
+    <Compile Include="data\DEmbedProviderObject.cs" />
+    <Compile Include="data\DEmbedThumbnailObject.cs" />
+    <Compile Include="data\DEmbedVideoObject.cs" />
+    <Compile Include="data\DEmojiObject.cs" />
+    <Compile Include="data\DReactionObject.cs" />
+    <Compile Include="data\DUserObject.cs" />
+    <Compile Include="data\DEmbedObject.cs" />
+    <Compile Include="data\DMessageObject.cs" />
+    <Compile Include="data\DRoleObject.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
