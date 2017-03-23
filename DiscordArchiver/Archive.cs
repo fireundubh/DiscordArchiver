@@ -1,16 +1,14 @@
 ﻿using System.Collections.Generic;
 using DiscordArchiver.data;
 
-namespace DiscordArchiver {
+namespace DiscordArchiver
+{
+    public class Archive
+    {
+        private static Archive _archive;
 
-    public class Archive {
+        public static Archive GetInstance() => _archive ?? (_archive = new Archive());
 
-        private static Archive _archvive;
-        public static Archive GetInstance() {
-            return _archvive ?? (_archvive = new Archive());
-        }
-
-        public List<DMessage> MessageArchive = new List<DMessage>(); 
-
+        public List<DMessageObject> MessageArchive = new List<DMessageObject>(); 
     }
 }
