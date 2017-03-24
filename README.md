@@ -18,3 +18,25 @@ d | debug | false | false | Toggle debug output
 ### Example
 
 `DiscordArchiver.exe -c <channel_id> -t <user_token> -a <message_id>`
+
+
+## Required Data
+
+### How to find the channel ID
+
+With the Discord app running:
+
+1. Open User Settings.
+2. Navigate to the Appearance tab.
+3. Check the Developer Mode box.
+4. Click the Done button.
+5. Right-click on a channel to open the context menu.
+6. Copy the channel ID by clicking Copy ID on the context menu.
+
+### How to find your user token
+
+With the Discord app running in your browser:
+
+1. In Chrome, press `Ctrl+Shift+I` to open the Developer Tools pane.
+2. Navigate to the Application tab.
+3. Copy the value of the `token` key.
