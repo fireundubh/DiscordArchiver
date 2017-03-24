@@ -12,7 +12,7 @@ namespace DiscordArchiver.data {
         public bool tts;
         public bool mention_everyone;
         public DUserObject[] mentions;
-        public DRoleObject[] mention_roles;
+        public ulong[] mention_roles;
         public DAttachmentObject[] attachments;
         public DEmbedObject[] embeds;
         public DReactionObject[] reactions;
